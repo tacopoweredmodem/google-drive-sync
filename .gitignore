@@ -1,0 +1,22 @@
+# Build and packaging
+dist/
+build/
+*.egg-info/
+
+# Python
+__pycache__/
+.pytest_cache
+.ruff_cache
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+.claude
+Thumbs.db
+
+# Credentials (should never be in the repo)
+credentials.json
+token.json
