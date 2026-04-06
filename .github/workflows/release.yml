@@ -1,0 +1,48 @@
+name: Create Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    # Only run on bump commits (minor/major bumps end in .0)
+    if: "contains(github.event.head_commit.message, 'bump: v')"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Get version and check if release-worthy
+        id: version
+        run: |
+          VERSION=$(python -c "import re; print(re.search(r'\"(.+?)\"', open('gdsync/__init__.py').read()).group(1))")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+          if [ "$PATCH" = "0" ]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release
+        if: steps.version.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "$TAG" \
+            --title "gdsync $VERSION" \
+            --generate-notes \
+            --target main
