@@ -67,18 +67,18 @@ On first run, a browser window opens for Google sign-in. After that, it's automa
 ## What it does
 
 ```text
-Google Drive                          Local files
-─────────────                         ───────────
-  My Doc       ───→  markdown/My Doc.md
-                     pdf/My Doc.pdf
-                     docx/My Doc.docx
+Google Drive         Local files
+─────────────        ───────────
+  My Doc      --> markdown/My Doc.md
+                  pdf/My Doc.pdf
+                  docx/My Doc.docx
 
-  Budget       ───→  csv/Budget.csv
-                     pdf/Budget.pdf
-                     xlsx/Budget.xlsx
+  Budget      --> csv/Budget.csv
+                  pdf/Budget.pdf
+                  xlsx/Budget.xlsx
 
-  Deck         ───→  pdf/Deck.pdf
-                     pptx/Deck.pptx
+  Deck        --> pdf/Deck.pdf
+                  pptx/Deck.pptx
 ```
 
 - Exports each file into **every applicable format**
