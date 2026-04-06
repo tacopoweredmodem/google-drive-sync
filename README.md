@@ -7,7 +7,6 @@
 **Sync your Google Drive to local files. Automatically.**
 
 [![Tests](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/test.yml/badge.svg)](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/test.yml)
-[![Release](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/publish.yml/badge.svg)](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/publish.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
