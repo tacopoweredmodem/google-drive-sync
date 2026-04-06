@@ -1,285 +1,119 @@
-<!-- cSpell:words gdsync venv pptx docx xlsx -->
+<!-- cSpell:words gdsync venv pptx docx xlsx pipx -->
 
 # gdsync
 
-Sync all Google Workspace files (Docs, Sheets, Slides, Drawings) from your Drive into multiple formats, preserving folder structure.
+<div align="center">
 
-## Output Structure
+**Sync your Google Drive to local files. Automatically.**
 
-```text
-~/Documents/gdsync/
-├── markdown/        # Docs → .md
-├── csv/             # Sheets → .csv
-├── pdf/             # All types → .pdf
-├── docx/            # Docs → Word
-├── xlsx/            # Sheets → Excel
-├── pptx/            # Slides → PowerPoint
-├── manifest.json    # Sync log
-└── .archives/       # Timestamped zip snapshots
-```
+[![Tests](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/test.yml/badge.svg)](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/test.yml)
+[![Release](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/publish.yml/badge.svg)](https://github.com/tacopoweredmodem/google-drive-sync/actions/workflows/publish.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
+Export Google Docs, Sheets, Slides, and Drawings into Markdown, PDF, CSV, DOCX, XLSX, and PPTX — preserving your Drive folder structure. Incremental syncs only fetch what changed.
+
+</div>
 
 ---
 
-## Installation
+## Quick Start
 
-### Homebrew (macOS)
-
-```bash
-brew tap adamabernathy/gdsync
-brew install gdsync
-```
-
-### pipx (recommended for CLI tools)
+### 1. Install
 
 ```bash
-pipx install gdsync
+pipx install git+https://github.com/tacopoweredmodem/google-drive-sync.git
 ```
 
-### pip (from PyPI)
+<details>
+<summary>Other install methods</summary>
 
 ```bash
-pip install gdsync
+# pip
+pip install git+https://github.com/tacopoweredmodem/google-drive-sync.git
+
+# From source
+git clone https://github.com/tacopoweredmodem/google-drive-sync.git
+cd google-drive-sync && pip install .
 ```
 
-### pip (from GitHub)
+</details>
+
+### 2. Set up Google credentials
+
+1. Create a project at [console.cloud.google.com](https://console.cloud.google.com)
+1. Enable the **Google Drive API**
+1. Configure the **OAuth consent screen** (add yourself as a test user)
+1. Create an **OAuth client ID** (Desktop app) and download the JSON
+1. Save it:
 
 ```bash
-pip install git+https://github.com/adamabernathy/gdsync.git
-```
-
-### From source
-
-```bash
-git clone https://github.com/adamabernathy/gdsync.git
-cd gdsync
-pip install .
-```
-
-All methods install the `gdsync` command into your PATH.
-
----
-
-## Local Development
-
-```bash
-# 1. Create a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 2. Install in editable mode with dev tools
-pip install -e ".[dev]"
-
-# 3. Verify
-gdsync --version
-```
-
-> **Note:** Editable installs (`pip install -e .`) require the project path to have no spaces.
-> If your path has spaces, use `pip install .` and re-run it after each code change.
-
-### Project layout
-
-```text
-gdsync/
-├── pyproject.toml        # Package metadata + dependencies
-├── README.md
-├── gdsync/
-│   ├── __init__.py       # Version string
-│   ├── cli.py            # Entry point, argument parsing, progress UI
-│   └── core.py           # Auth, Drive API, export logic
-└── tests/
-    ├── test_core.py      # Config, safe_filename, HTML→Markdown
-    └── test_cli.py       # Archive pruning, exceptions, manifest
-```
-
-### Testing & linting
-
-```bash
-# Install dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Lint
-ruff check gdsync/ tests/
-
-# Auto-format
-ruff format gdsync/ tests/
-```
-
-### Making changes
-
-All application logic lives in two files:
-
-- **`gdsync/core.py`** — authentication, file discovery, folder resolution, export, and conversion functions.
-- **`gdsync/cli.py`** — `main()` entry point, argument parsing, progress bar, summary output, archiving.
-
-After editing, run `gdsync` directly (editable install) or reinstall:
-
-```bash
-# If using editable install:
-gdsync --dry-run
-
-# If using standard install, reinstall after changes:
-pip install . && gdsync --dry-run
-```
-
-### Bumping the version
-
-Update the version in two places:
-
-1. `gdsync/__init__.py` — `__version__ = "X.Y.Z"`
-2. `pyproject.toml` — `version = "X.Y.Z"`
-
----
-
-## Setup (Step by Step)
-
-### Step 1: Create a Google Cloud Project
-
-1. Open <https://console.cloud.google.com> and sign in with your Google account.
-2. In the top-left dropdown (next to "Google Cloud"), click **Select a project** then **New Project**.
-3. Give it any name (e.g. "gdsync") and click **Create**.
-4. Make sure the new project is selected in the top-left dropdown.
-
-### Step 2: Enable the Google Drive API
-
-1. In the left sidebar, go to **APIs & Services > Library**.
-2. Search for **Google Drive API**.
-3. Click on it, then click the blue **Enable** button.
-
-### Step 3: Configure the OAuth Consent Screen
-
-You must do this before creating credentials.
-
-1. In the left sidebar, go to **APIs & Services > OAuth consent screen**.
-2. Click **Get Started** (or **Configure Consent Screen**).
-3. Fill in:
-   - **App name**: anything (e.g. "gdsync")
-   - **User support email**: your email
-   - **Developer contact email**: your email
-4. Click **Save and Continue** through each section (Scopes, Test Users, Summary) — defaults are fine.
-5. On the **Test Users** step, click **Add Users** and add your own Gmail/Workspace email address, then continue.
-6. You should see a summary page. Click **Back to Dashboard**.
-
-> **Important:** While the app is in "Testing" status, only the test users you added can authorize it. This is fine for personal use.
-
-### Step 4: Create OAuth Credentials
-
-1. In the left sidebar, go to **APIs & Services > Credentials**.
-2. Click **+ Create Credentials** at the top, then select **OAuth client ID**.
-3. For **Application type**, choose **Desktop app**.
-4. Name it anything (e.g. "gdsync Desktop").
-5. Click **Create**.
-6. A dialog appears with your client ID. Click **Download JSON**.
-7. **Rename** the downloaded file to `credentials.json`.
-8. **Move** it to `~/.gdsync/credentials.json`:
-
-```bash
+mkdir -p ~/.gdsync
 mv ~/Downloads/client_secret_*.json ~/.gdsync/credentials.json
 ```
 
-### Step 5: Run
+> See the [full setup guide](https://github.com/tacopoweredmodem/google-drive-sync/wiki/Google-Cloud-Setup) for detailed screenshots and instructions.
+
+### 3. Run
 
 ```bash
-# First run — preview what would be exported (no downloads):
-gdsync --dry-run
+gdsync --dry-run   # Preview what will sync
+gdsync             # Sync everything
 ```
 
-**On the first run:**
-
-1. A browser window will open asking you to sign in to Google.
-2. You may see a warning: **"Google hasn't verified this app"** — this is expected for personal projects.
-   - Click **Advanced** (bottom-left).
-   - Click **Go to gdsync (unsafe)**.
-3. Grant the requested permission (read-only access to Drive).
-4. The browser will say "The authentication flow has completed." You can close it.
-
-Your token is saved to `~/.gdsync/token.json` so you won't need to do this again.
-
-```bash
-# Sync (first run exports everything, subsequent runs only fetch changes):
-gdsync
-
-# Force a full re-export, ignoring previous sync state:
-gdsync --full
-
-# Export only Docs and Sheets:
-gdsync --types docs sheets
-
-# Custom output directory:
-gdsync -o ~/Desktop/my_drive_backup
-
-# Verbose logging (shows skipped files too):
-gdsync -v
-```
+On first run, a browser window opens for Google sign-in. After that, it's automatic.
 
 ---
 
-## Configuration
-
-gdsync stores its config and credentials in `~/.gdsync/`:
+## What it does
 
 ```text
-~/.gdsync/
-├── config.yaml       # Settings (edit this)
-├── credentials.json  # OAuth client secret (you provide this)
-├── token.json        # OAuth token (auto-generated)
-└── exceptions.yaml   # Files that failed to export (auto-generated)
+Google Drive                          Local files
+─────────────                         ───────────
+  My Doc       ───→  markdown/My Doc.md
+                     pdf/My Doc.pdf
+                     docx/My Doc.docx
+
+  Budget       ───→  csv/Budget.csv
+                     pdf/Budget.pdf
+                     xlsx/Budget.xlsx
+
+  Deck         ───→  pdf/Deck.pdf
+                     pptx/Deck.pptx
 ```
 
-### config.yaml
+- Exports each file into **every applicable format**
+- Preserves your **Drive folder hierarchy**
+- **Incremental** — only re-exports files that changed since last sync
+- **Archives** — keeps timestamped zip snapshots with automatic pruning
+- **Skips failures gracefully** — logs them and moves on
 
-```yaml
-output_dir: ~/Documents/gdsync
-rate_limit_delay: 0.2
-max_retries: 3
-max_backups: 5
-max_archive_mb: 500
+---
+
+## Common commands
+
+```bash
+gdsync                       # Sync all files
+gdsync --types docs sheets   # Only Docs and Sheets
+gdsync --full                # Force full re-export
+gdsync -o ~/Backup/drive     # Custom output directory
+gdsync -v                    # Verbose logging
 ```
 
-| Key                | Description                                    | Default               |
-| ------------------ | ---------------------------------------------- | --------------------- |
-| `output_dir`       | Where exported files are saved                 | `~/Documents/gdsync`  |
-| `rate_limit_delay` | Seconds to wait between API calls              | `0.2`                 |
-| `max_retries`      | Number of retries on transient API errors      | `3`                   |
-| `max_backups`      | Maximum number of archive snapshots to keep    | `5`                   |
-| `max_archive_mb`   | Maximum total size of all archives (MB). Supersedes `max_backups` — if archives exceed this limit, the oldest are pruned even if the count is under `max_backups`. | `500` |
+---
 
-CLI flags (e.g. `-o`) always override config file values.
+## Documentation
+
+For detailed docs, see the **[Wiki](https://github.com/tacopoweredmodem/google-drive-sync/wiki)**:
+
+- [Google Cloud Setup](https://github.com/tacopoweredmodem/google-drive-sync/wiki/Google-Cloud-Setup) — step-by-step credentials walkthrough
+- [Configuration](https://github.com/tacopoweredmodem/google-drive-sync/wiki/Configuration) — config file, CLI options, and backup settings
+- [CLI Reference](https://github.com/tacopoweredmodem/google-drive-sync/wiki/CLI-Reference) — all flags and usage examples
+- [Troubleshooting](https://github.com/tacopoweredmodem/google-drive-sync/wiki/Troubleshooting) — common errors and fixes
+- [Development](https://github.com/tacopoweredmodem/google-drive-sync/wiki/Development) — building from source, testing, and contributing
 
 ---
 
-## CLI Options
+## License
 
-| Flag                  | Description                                        |
-| --------------------- | -------------------------------------------------- |
-| `-o`, `--output`      | Output directory (overrides config)                |
-| `-c`, `--credentials` | Path to OAuth credentials JSON                     |
-| `-t`, `--token`       | Path to saved token file                           |
-| `--types`             | Filter: `docs`, `sheets`, `slides`, `drawings`    |
-| `--dry-run`           | List files without downloading                     |
-| `--full`              | Force full re-export, ignore previous manifest     |
-| `-v`, `--verbose`     | Show detailed step-by-step output                  |
-| `--version`           | Show version and exit                              |
-
----
-
-## Troubleshooting
-
-| Problem                                      | Fix                                                                                                  |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **"This app is blocked"** in browser         | You skipped Step 3. Go back and configure the OAuth consent screen, and add yourself as a test user. |
-| **"Google hasn't verified this app"** warning | Expected. Click **Advanced > Go to \[app name\] (unsafe)**.                                          |
-| **"Credentials file not found"** error        | Make sure `credentials.json` is in `~/.gdsync/`.                                                     |
-| **"Token has been expired or revoked"**       | Delete `~/.gdsync/token.json` and run `gdsync` again to re-authorize.                                |
-| **403 / rate limit errors**                   | The tool retries automatically. If persistent, wait a few minutes and try again.                     |
-
----
-
-## Notes
-
-- gdsync uses `drive.readonly` scope. It **cannot** modify or delete your files.
-- Google imposes rate limits on export requests. gdsync includes automatic retry with exponential backoff.
-- Large Sheets with multiple tabs export as a single CSV (first sheet only). This is a Google API limitation.
-- Files that fail to export are logged to `~/.gdsync/exceptions.yaml` and skipped on future runs. Remove an entry to retry.
+[GNU Affero General Public License v3.0](LICENSE)

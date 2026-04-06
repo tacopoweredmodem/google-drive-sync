@@ -1,0 +1,37 @@
+name: Auto Patch Bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    # Skip if the commit was made by this action (prevent infinite loop)
+    if: "!contains(github.event.head_commit.message, 'bump: v')"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bump patch version
+        run: python scripts/bump.py patch
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gdsync/__init__.py pyproject.toml
+          VERSION=$(python -c "import re; print(re.search(r'\"(.+?)\"', open('gdsync/__init__.py').read()).group(1))")
+          git commit -m "bump: v${VERSION}"
+          git push
